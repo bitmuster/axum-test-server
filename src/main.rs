@@ -12,6 +12,9 @@ use utoipa_redoc::{Redoc, Servable};
 use utoipa_scalar::{Scalar, Servable as ScalarServable};
 use utoipa_swagger_ui::SwaggerUi;
 
+use axum_server::tls_rustls::RustlsConfig;
+use axum_server::tls_openssl::OpenSSLConfig;
+
 const TODO_TAG: &str = "todo";
 
 #[tokio::main]
@@ -52,9 +55,24 @@ async fn main() -> Result<(), Error> {
         // .merge(RapiDoc::with_openapi("/api-docs/openapi2.json", api).path("/rapidoc"))
         .merge(Scalar::with_url("/scalar", api));
 
-    let address = SocketAddr::from((Ipv4Addr::UNSPECIFIED, 8080));
+    //let address = SocketAddr::from((Ipv4Addr::UNSPECIFIED, 8080));
+    let address = SocketAddr::from((Ipv4Addr::UNSPECIFIED, 44001));
+
+    let config = OpenSSLConfig::from_pem_file(
+        "/home/hektor/tmp/cert.pem",
+        "/home/hektor/tmp/key.pem",
+    )
+    .unwrap();
+
+    axum_server::bind_openssl(address, config)
+        .serve(router.into_make_service())
+        .await
+        .unwrap();
+
+        /*
     let listener = TcpListener::bind(&address).await?;
-    axum::serve(listener, router.into_make_service()).await
+    axum::serve(listener, router.into_make_service()).await*/
+    Ok(())
 }
 
 mod todo {
