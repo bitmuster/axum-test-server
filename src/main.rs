@@ -120,6 +120,7 @@ mod todo {
     pub(super) fn router() -> OpenApiRouter {
         let store = Arc::new(Store::default());
         OpenApiRouter::new()
+            .routes(routes!(do_stuff))
             .routes(routes!(list_todos, create_todo))
             .routes(routes!(search_todos))
             .routes(routes!(mark_done, delete_todo))
@@ -150,6 +151,31 @@ mod todo {
         value: String,
         /// Search by `done` status.
         done: bool,
+    }
+
+    /// Stuff
+    #[utoipa::path(
+        get,
+        path = "/stuff/{mul}",
+        tag = TODO_TAG,
+        responses(
+            (status = 200, description = "Stuff successfully"),
+            (status = 404, description = "Stuff not found")
+        ),
+        params(
+            ("mul" = u32, Path, description = "Multron")
+        ),
+        security(
+            (), // <-- make optional authentication
+            ("api_key" = [])
+        )
+    )]
+    async fn do_stuff(
+        Path(mul): Path<u32>,
+        State(store): State<Arc<Store>>,
+        headers: HeaderMap,
+    ) -> Json<String> {
+        Json(String::from("Stuff").repeat(mul as usize))
     }
 
     /// Search Todos by query params.
