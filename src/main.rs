@@ -7,9 +7,9 @@ use utoipa::{
     Modify, OpenApi,
 };
 use utoipa_axum::router::OpenApiRouter;
-use utoipa_rapidoc::RapiDoc;
-use utoipa_redoc::{Redoc, Servable};
-use utoipa_scalar::{Scalar, Servable as ScalarServable};
+//use utoipa_rapidoc::RapiDoc;
+//use utoipa_redoc::{Redoc, Servable};
+//use utoipa_scalar::{Scalar, Servable as ScalarServable};
 use utoipa_swagger_ui::SwaggerUi;
 
 use axum_server::tls_rustls::RustlsConfig;
@@ -46,14 +46,14 @@ async fn main() -> Result<(), Error> {
         .split_for_parts();
 
     let router = router
-        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", api.clone()))
-        .merge(Redoc::with_url("/redoc", api.clone()))
+        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", api.clone()));
+        // .merge(Redoc::with_url("/redoc", api.clone()))
         // There is no need to create `RapiDoc::with_openapi` because the OpenApi is served
         // via SwaggerUi instead we only make rapidoc to point to the existing doc.
-        .merge(RapiDoc::new("/api-docs/openapi.json").path("/rapidoc"))
+        // .merge(RapiDoc::new("/api-docs/openapi.json").path("/rapidoc"))
         // Alternative to above
         // .merge(RapiDoc::with_openapi("/api-docs/openapi2.json", api).path("/rapidoc"))
-        .merge(Scalar::with_url("/scalar", api));
+        //.merge(Scalar::with_url("/scalar", api));
 
     //let address = SocketAddr::from((Ipv4Addr::UNSPECIFIED, 8080));
     let address = SocketAddr::from((Ipv4Addr::UNSPECIFIED, 44001));
