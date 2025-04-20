@@ -1,5 +1,5 @@
 [package]
-name = "todo-axum"
+name = "axum-test-server"
 description = "Simple axum todo example api with utoipa and Swagger UI, Rapidoc, Redoc, and Scalar"
 version = "0.1.0"
 edition = "2021"

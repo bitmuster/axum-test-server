@@ -59,8 +59,8 @@ async fn main() -> Result<(), Error> {
     let address = SocketAddr::from((Ipv4Addr::UNSPECIFIED, 44001));
 
     let config = OpenSSLConfig::from_pem_file(
-        "/home/hektor/tmp/cert.pem",
-        "/home/hektor/tmp/key.pem",
+        "./cert.pem",
+        "./key.pem",
     )
     .unwrap();
 
