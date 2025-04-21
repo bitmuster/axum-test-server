@@ -26,7 +26,8 @@ async fn main() -> Result<(), Error> {
         // This allows you to use, e.g., `RUST_LOG=info` or `RUST_LOG=debug`
         .with_env_filter(
             EnvFilter::try_from_default_env()
-                .or_else(|_| EnvFilter::try_new("axum_tracing_example=error,tower_http=warn"))
+                //.or_else(|_| EnvFilter::try_new("axum-test-server=trace,tower_http=warn"))
+                //.or_else(|_| EnvFilter::try_new("axum-test-server=trace,tower_http=warn"))
                 .unwrap(),
         )
         .init();
@@ -208,13 +209,14 @@ mod todo {
     async fn convert_xml(
         State(store): State<Arc<Store>>,
         //string : Query<String>
-        Json(string): Json<String>,
+        Json(val): Json<Val>,
         //body: String,
         //string : String
         //json : Json<String>
         //    ) -> String {
     ) -> Json<String> {
         //let string : String = Json(json);
+        let string : String = val.value;
         println!("The Request {}", string);
         let results = blend_result::parse_from_str_to_str(&string).unwrap();
         println!("The Reponse {}", results);
