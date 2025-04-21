@@ -121,6 +121,7 @@ mod todo {
         let store = Arc::new(Store::default());
         OpenApiRouter::new()
             .routes(routes!(do_stuff))
+            .routes(routes!(convert_xml))
             .routes(routes!(list_todos, create_todo))
             .routes(routes!(search_todos))
             .routes(routes!(mark_done, delete_todo))
@@ -178,6 +179,26 @@ mod todo {
         Json(String::from("Stuff").repeat(mul as usize))
     }
 
+    /// convert
+    #[utoipa::path(
+        post,
+        path = "/xml",
+        tag = TODO_TAG,
+        responses(
+            (status = 200, description = "List matching todos by query", body = [String]),
+            (status = 201, description = "Todo item created successfully", body = String),
+            (status = 409, description = "Todo already exists", body = String),
+        )
+    )]
+    async fn convert_xml(
+        State(store): State<Arc<Store>>,
+        Json(string): Json<String>,        
+        //body: String,
+    ) -> String {
+        let results = blend_result::parse_from_str_to_str(&string).unwrap();
+        results
+    }
+    
     /// Search Todos by query params.
     ///
     /// Search `Todo`s by query params and return matching `Todo`s.
