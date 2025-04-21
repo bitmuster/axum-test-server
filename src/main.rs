@@ -12,8 +12,8 @@ use utoipa_axum::router::OpenApiRouter;
 //use utoipa_scalar::{Scalar, Servable as ScalarServable};
 use utoipa_swagger_ui::SwaggerUi;
 
-use axum_server::tls_rustls::RustlsConfig;
 use axum_server::tls_openssl::OpenSSLConfig;
+use axum_server::tls_rustls::RustlsConfig;
 
 const TODO_TAG: &str = "todo";
 
@@ -45,31 +45,27 @@ async fn main() -> Result<(), Error> {
         .nest("/api/v1/todos", todo::router())
         .split_for_parts();
 
-    let router = router
-        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", api.clone()));
-        // .merge(Redoc::with_url("/redoc", api.clone()))
-        // There is no need to create `RapiDoc::with_openapi` because the OpenApi is served
-        // via SwaggerUi instead we only make rapidoc to point to the existing doc.
-        // .merge(RapiDoc::new("/api-docs/openapi.json").path("/rapidoc"))
-        // Alternative to above
-        // .merge(RapiDoc::with_openapi("/api-docs/openapi2.json", api).path("/rapidoc"))
-        //.merge(Scalar::with_url("/scalar", api));
+    let router =
+        router.merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", api.clone()));
+    // .merge(Redoc::with_url("/redoc", api.clone()))
+    // There is no need to create `RapiDoc::with_openapi` because the OpenApi is served
+    // via SwaggerUi instead we only make rapidoc to point to the existing doc.
+    // .merge(RapiDoc::new("/api-docs/openapi.json").path("/rapidoc"))
+    // Alternative to above
+    // .merge(RapiDoc::with_openapi("/api-docs/openapi2.json", api).path("/rapidoc"))
+    //.merge(Scalar::with_url("/scalar", api));
 
     //let address = SocketAddr::from((Ipv4Addr::UNSPECIFIED, 8080));
     let address = SocketAddr::from((Ipv4Addr::UNSPECIFIED, 44001));
 
-    let config = OpenSSLConfig::from_pem_file(
-        "./cert.pem",
-        "./key.pem",
-    )
-    .unwrap();
+    let config = OpenSSLConfig::from_pem_file("./cert.pem", "./key.pem").unwrap();
 
     axum_server::bind_openssl(address, config)
         .serve(router.into_make_service())
         .await
         .unwrap();
 
-        /*
+    /*
     let listener = TcpListener::bind(&address).await?;
     axum::serve(listener, router.into_make_service()).await*/
     Ok(())
@@ -101,6 +97,12 @@ mod todo {
         #[schema(example = "Buy groceries")]
         value: String,
         done: bool,
+    }
+
+    #[derive(Serialize, Deserialize, ToSchema, Clone)]
+    struct Val {
+        #[schema(example = "Buy groceries")]
+        value: String,
     }
 
     /// Todo operation errors
@@ -185,20 +187,28 @@ mod todo {
         path = "/xml",
         tag = TODO_TAG,
         responses(
-            (status = 200, description = "List matching todos by query", body = [String]),
+            (status = 200, description = "List matching todos by query", body = String),
             (status = 201, description = "Todo item created successfully", body = String),
             (status = 409, description = "Todo already exists", body = String),
         )
     )]
     async fn convert_xml(
         State(store): State<Arc<Store>>,
-        Json(string): Json<String>,        
+        //string : Query<String>
+        Json(string): Json<String>,
         //body: String,
-    ) -> String {
+        //string : String
+        //json : Json<String>
+        //    ) -> String {
+    ) -> Json<String> {
+        //let string : String = Json(json);
+        println!("The Request {}", string);
         let results = blend_result::parse_from_str_to_str(&string).unwrap();
-        results
+        println!("The Reponse {}", results);
+        // results
+        Json(results)
     }
-    
+
     /// Search Todos by query params.
     ///
     /// Search `Todo`s by query params and return matching `Todo`s.
