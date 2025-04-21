@@ -15,11 +15,23 @@ use utoipa_swagger_ui::SwaggerUi;
 use axum_server::tls_openssl::OpenSSLConfig;
 use axum_server::tls_rustls::RustlsConfig;
 
+use tower_http::trace::TraceLayer;
+use tracing_subscriber::EnvFilter;
+
 const TODO_TAG: &str = "todo";
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    #[derive(OpenApi)]
+        tracing_subscriber::fmt()
+        // This allows you to use, e.g., `RUST_LOG=info` or `RUST_LOG=debug`
+        .with_env_filter(
+            EnvFilter::try_from_default_env()
+                .or_else(|_| EnvFilter::try_new("axum_tracing_example=error,tower_http=warn"))
+                .unwrap(),
+        )
+        .init();
+        
+        #[derive(OpenApi)]
     #[openapi(
         modifiers(&SecurityAddon),
         tags(
@@ -28,6 +40,7 @@ async fn main() -> Result<(), Error> {
     )]
     struct ApiDoc;
 
+    
     struct SecurityAddon;
 
     impl Modify for SecurityAddon {
