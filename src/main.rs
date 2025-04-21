@@ -204,19 +204,20 @@ mod todo {
             (status = 200, description = "List matching todos by query", body = String),
             (status = 201, description = "Todo item created successfully", body = String),
             (status = 409, description = "Todo already exists", body = String),
-        )
+        ),
+        request_body(content = String, description = "Xml as string request", content_type = "text/xml"),
     )]
     async fn convert_xml(
         State(store): State<Arc<Store>>,
         //string : Query<String>
-        Json(val): Json<Val>,
+        //Json(val): Json<Val>,
         //body: String,
-        //string : String
+        string : String
         //json : Json<String>
         //    ) -> String {
     ) -> Json<String> {
         //let string : String = Json(json);
-        let string : String = val.value;
+        //let string : String = val.value;
         println!("The Request {}", string);
         let results = blend_result::parse_from_str_to_str(&string).unwrap();
         println!("The Reponse {}", results);
