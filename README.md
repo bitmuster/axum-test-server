@@ -16,3 +16,13 @@ Scalar can be reached on `http://localhost:8080/scalar`.
 ```bash
 cargo run
 ```
+
+# Docs
+
+https://crates.io/crates/tracing-subscriber
+https://docs.rs/axum/0.8.3/axum/index.html
+https://docs.rs/tower-service/0.3.3/tower_service/index.html
+https://docs.rs/utoipa-swagger-ui/latest/utoipa_swagger_ui/index.html
+https://docs.rs/utoipa-axum/latest/utoipa_axum/index.html
+https://docs.rs/utoipa/latest/utoipa/
+
