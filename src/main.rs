@@ -27,7 +27,7 @@ async fn main() -> Result<(), Error> {
         .with_env_filter(
             EnvFilter::try_from_default_env()
                 //.or_else(|_| EnvFilter::try_new("axum-test-server=trace,tower_http=warn"))
-                //.or_else(|_| EnvFilter::try_new("axum-test-server=trace,tower_http=warn"))
+                .or_else(|_| EnvFilter::try_new("axum-test-server=trace,tower_http=warn"))
                 .unwrap(),
         )
         .init();
@@ -214,15 +214,15 @@ mod todo {
         //body: String,
         string : String
         //json : Json<String>
-        //    ) -> String {
-    ) -> Json<String> {
+           ) -> String {
+    //) -> Json<String> {
         //let string : String = Json(json);
         //let string : String = val.value;
         println!("The Request {}", string);
         let results = blend_result::parse_from_str_to_str(&string).unwrap();
         println!("The Reponse {}", results);
-        // results
-        Json(results)
+        results
+        //Json(results)
     }
 
     /// Search Todos by query params.
