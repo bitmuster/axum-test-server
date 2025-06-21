@@ -103,7 +103,22 @@ mod todo {
     use crate::TODO_TAG;
 
     /// In-memory todo store
-    type Store = Mutex<Vec<Todo>>;
+    type Store = Mutex<Storage>;
+
+    #[derive(Clone)]
+    struct Storage {
+        todo_storage: Vec<Todo>,
+        blend_storage: Vec<String>,
+    }
+
+    impl Storage {
+        fn new() -> Self {
+            Storage {
+                todo_storage: Vec::default(),
+                blend_storage: Vec::default(),
+            }
+        }
+    }
 
     /// Item to do.
     #[derive(Serialize, Deserialize, ToSchema, Clone)]
@@ -135,7 +150,7 @@ mod todo {
     }
 
     pub(super) fn router() -> OpenApiRouter {
-        let store = Arc::new(Store::default());
+        let store = Arc::new(Mutex::new(Storage::new()));
         OpenApiRouter::new()
             .routes(routes!(do_stuff))
             .routes(routes!(convert_xml))
@@ -159,7 +174,7 @@ mod todo {
     async fn list_todos(State(store): State<Arc<Store>>) -> Json<Vec<Todo>> {
         let todos = store.lock().await.clone();
 
-        Json(todos)
+        Json(todos.todo_storage)
     }
 
     /// Todo search query
@@ -247,6 +262,7 @@ mod todo {
             store
                 .lock()
                 .await
+                .todo_storage
                 .iter()
                 .filter(|todo| {
                     todo.value.to_lowercase() == query.value.to_lowercase()
@@ -276,6 +292,7 @@ mod todo {
         let mut todos = store.lock().await;
 
         todos
+            .todo_storage
             .iter_mut()
             .find(|existing_todo| existing_todo.id == todo.id)
             .map(|found| {
@@ -289,7 +306,7 @@ mod todo {
                     .into_response()
             })
             .unwrap_or_else(|| {
-                todos.push(todo.clone());
+                todos.todo_storage.push(todo.clone());
 
                 (StatusCode::CREATED, Json(todo)).into_response()
             })
@@ -327,6 +344,7 @@ mod todo {
         let mut todos = store.lock().await;
 
         todos
+            .todo_storage
             .iter_mut()
             .find(|todo| todo.id == id)
             .map(|todo| {
@@ -365,7 +383,8 @@ mod todo {
             Err(error) => return error.into_response(),
         }
 
-        let mut todos = store.lock().await;
+        let mut state = store.lock().await;
+        let mut todos = &mut state.todo_storage;
 
         let len = todos.len();
 
