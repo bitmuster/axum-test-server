@@ -13,9 +13,19 @@ RapiDoc can be found from `http://localhost:8080/rapidoc`.
 
 Scalar can be reached on `http://localhost:8080/scalar`.
 
+
+Generate certificate:
+
+    openssl req -x509 -nodes -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365
+
+
 ```bash
 cargo run
 ```
+
+Open:
+
+    https://localhost:44001/swagger-ui/
 
 # Docs
 
