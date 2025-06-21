@@ -22,7 +22,7 @@ const TODO_TAG: &str = "todo";
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-        tracing_subscriber::fmt()
+    tracing_subscriber::fmt()
         // This allows you to use, e.g., `RUST_LOG=info` or `RUST_LOG=debug`
         .with_env_filter(
             EnvFilter::try_from_default_env()
@@ -31,17 +31,18 @@ async fn main() -> Result<(), Error> {
                 .unwrap(),
         )
         .init();
-        
-        #[derive(OpenApi)]
+
+    #[derive(OpenApi)]
     #[openapi(
         modifiers(&SecurityAddon),
         tags(
-            (name = TODO_TAG, description = "Todo items management API")
+            (name = TODO_TAG, description = "Todo items management API"),
+            (name = "stuff", description = "Various tests"),
+            (name = "blend", description = "Robotframework result blender"),
         )
     )]
     struct ApiDoc;
 
-    
     struct SecurityAddon;
 
     impl Modify for SecurityAddon {
@@ -174,7 +175,7 @@ mod todo {
     #[utoipa::path(
         get,
         path = "/stuff/{mul}",
-        tag = TODO_TAG,
+        tag = "stuff",
         responses(
             (status = 200, description = "Stuff successfully"),
             (status = 404, description = "Stuff not found")
@@ -199,7 +200,7 @@ mod todo {
     #[utoipa::path(
         post,
         path = "/xml",
-        tag = TODO_TAG,
+        tag = "blend",
         responses(
             (status = 200, description = "List matching todos by query", body = String),
             (status = 201, description = "Todo item created successfully", body = String),
@@ -212,10 +213,9 @@ mod todo {
         //string : Query<String>
         //Json(val): Json<Val>,
         //body: String,
-        string : String
-        //json : Json<String>
-           ) -> String {
-    //) -> Json<String> {
+        string: String, //json : Json<String>
+    ) -> String {
+        //) -> Json<String> {
         //let string : String = Json(json);
         //let string : String = val.value;
         println!("The Request {}", string);
