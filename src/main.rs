@@ -1,7 +1,6 @@
 use std::net::{Ipv4Addr, SocketAddr};
 
 use std::io::Error;
-use tokio::net::TcpListener;
 use utoipa::{
     openapi::security::{ApiKey, ApiKeyValue, SecurityScheme},
     Modify, OpenApi,
@@ -10,13 +9,9 @@ use utoipa_axum::router::OpenApiRouter;
 //use utoipa_rapidoc::RapiDoc;
 //use utoipa_redoc::{Redoc, Servable};
 //use utoipa_scalar::{Scalar, Servable as ScalarServable};
-use utoipa_swagger_ui::SwaggerUi;
-
 use axum_server::tls_openssl::OpenSSLConfig;
-use axum_server::tls_rustls::RustlsConfig;
-
-use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
+use utoipa_swagger_ui::SwaggerUi;
 
 const TODO_TAG: &str = "todo";
 
@@ -205,8 +200,8 @@ mod todo {
     )]
     async fn do_stuff(
         Path(mul): Path<u32>,
-        State(store): State<Arc<Store>>,
-        headers: HeaderMap,
+        State(_store): State<Arc<Store>>,
+        _headers: HeaderMap,
     ) -> Json<String> {
         Json(String::from("Stuff").repeat(mul as usize))
     }
@@ -384,7 +379,7 @@ mod todo {
         }
 
         let mut state = store.lock().await;
-        let mut todos = &mut state.todo_storage;
+        let todos = &mut state.todo_storage;
 
         let len = todos.len();
 
