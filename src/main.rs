@@ -31,9 +31,9 @@ async fn main() -> Result<(), Error> {
     #[openapi(
         modifiers(&SecurityAddon),
         tags(
-            (name = TODO_TAG, description = "Todo items management API"),
-            (name = "stuff", description = "Various tests"),
             (name = "blend", description = "Robotframework result blender"),
+            (name = "stuff", description = "Various tests"),
+            (name = TODO_TAG, description = "Todo items management API"),
         )
     )]
     struct ApiDoc;
@@ -103,7 +103,7 @@ mod todo {
     #[derive(Clone)]
     struct Storage {
         todo_storage: Vec<Todo>,
-        blend_storage: Vec<String>,
+        blend_storage: Vec<(String, String)>,
     }
 
     impl Storage {
@@ -149,6 +149,8 @@ mod todo {
         OpenApiRouter::new()
             .routes(routes!(do_stuff))
             .routes(routes!(convert_xml))
+            .routes(routes!(upload_to_blend))
+            .routes(routes!(blend_files))
             .routes(routes!(list_todos, create_todo))
             .routes(routes!(search_todos))
             .routes(routes!(mark_done, delete_todo))
@@ -219,6 +221,60 @@ mod todo {
         request_body(content = String, description = "Xml as string request", content_type = "text/xml"),
     )]
     async fn convert_xml(
+        State(store): State<Arc<Store>>,
+        //string : Query<String>
+        //Json(val): Json<Val>,
+        //body: String,
+        string: String, //json : Json<String>
+    ) -> String {
+        //) -> Json<String> {
+        //let string : String = Json(json);
+        //let string : String = val.value;
+        println!("The Request {}", string);
+        let results = blend_result::parse_from_str_to_str(&string).unwrap();
+        println!("The Reponse {}", results);
+        results
+        //Json(results)
+    }
+
+    /// Upload file to blend
+    #[utoipa::path(
+        post,
+        path = "/upload",
+        tag = "blend",
+        params(
+            ("name" = String, Path, description = "Filename")
+        ),
+        responses(
+            (status = 200, description = "File uploadedFile uploaded"),
+        ),
+        request_body(content = String, description = "Xml as string request", content_type = "text/xml"),
+    )]
+    async fn upload_to_blend(
+        Path(mul): Path<String>,
+        State(store): State<Arc<Store>>,
+        // name: String,
+        // data: String,
+    ) -> impl IntoResponse {
+        let mut state = store.lock().await;
+        // println!("The Request {}", name);
+        // println!("The Request Data {}", data.len());
+        // state.blend_storage.push((name, data));
+    }
+
+    /// blend
+    #[utoipa::path(
+        get,
+        path = "/blend",
+        tag = "blend",
+        responses(
+            (status = 200, description = "List matching todos by query", body = String),
+            (status = 201, description = "Todo item created successfully", body = String),
+            (status = 409, description = "Todo already exists", body = String),
+        ),
+        request_body(content = String, description = "Xml as string request", content_type = "text/xml"),
+    )]
+    async fn blend_files(
         State(store): State<Arc<Store>>,
         //string : Query<String>
         //Json(val): Json<Val>,
