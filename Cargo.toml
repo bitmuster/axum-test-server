@@ -25,6 +25,7 @@ utoipa = { version = "5.3.1", features = ["axum_extras"] }
 utoipa-swagger-ui = { version="9.0.1", features = ["axum"] }
 utoipa-axum = "0.2.0"
 blend_result = { git = "https://github.com/bitmuster/BlendResult.git"}
+# blend_result = { path = "../BlendResult"}
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features=["env-filter"] }
 tower-http = {version = "0.6.2", features = ["trace"] }
