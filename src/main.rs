@@ -84,19 +84,19 @@ async fn main() -> Result<(), Error> {
 mod todo {
     use std::sync::Arc;
 
+    use crate::TODO_TAG;
     use axum::debug_handler;
     use axum::{
         extract::{Path, Query, State},
         response::IntoResponse,
         Json,
     };
+    use blend_result;
     use hyper::{HeaderMap, StatusCode};
     use serde::{Deserialize, Serialize};
     use tokio::sync::Mutex;
     use utoipa::{IntoParams, ToSchema};
     use utoipa_axum::{router::OpenApiRouter, routes};
-
-    use crate::TODO_TAG;
 
     /// In-memory todo store
     type Store = Mutex<Storage>;
@@ -306,7 +306,7 @@ mod todo {
         ),
     )]
     async fn list_to_blend(State(store): State<Arc<Store>>) -> impl IntoResponse {
-        let mut state = store.lock().await;
+        let state = store.lock().await;
         let files = state
             .blend_storage
             .iter()
@@ -322,25 +322,33 @@ mod todo {
         tag = "blend",
         responses(
             (status = 200, description = "List matching todos by query", body = String),
-            (status = 201, description = "Todo item created successfully", body = String),
-            (status = 409, description = "Todo already exists", body = String),
+            (status = 400, description = "Errror", body = String),
         ),
-        request_body(content = String, description = "Xml as string request",
-             content_type = "text/xml"),
     )]
-    async fn blend_files(
-        State(store): State<Arc<Store>>,
-        //string : Query<String>
-        //Json(val): Json<Val>,
-        //body: String,
-        string: String, //json : Json<String>
-    ) -> String {
-        //) -> Json<String> {
-        //let string : String = Json(json);
-        //let string : String = val.value;
-        println!("The Request {}", string);
-        let results = blend_result::parse_from_str_to_str(&string).unwrap();
-        println!("The Reponse {}", results);
+    async fn blend_files(State(store): State<Arc<Store>>) -> impl IntoResponse {
+        let state = store.lock().await;
+        // println!("The Request {}", string);
+        let files = state
+            .blend_storage
+            .iter()
+            .map(|x| x.0.clone())
+            .collect::<Vec<String>>();
+        let data = state
+            .blend_storage
+            .iter()
+            .map(|x| x.1.clone())
+            .collect::<Vec<String>>();
+        let mrl = match blend_result::blend_results::blend(&data, &files, 5) {
+            Ok(x) => x,
+            Err(error) => return error.to_string(),
+        };
+        mrl.export_to_ods();
+        // match mrl.export_to_ods() {
+        //     Ok(_) => (),
+        //     Err(error) => return error.into_response(),
+        // };
+        let results = "bam".to_string();
+        println!("The Reponse has len {}", results.len());
         results
         //Json(results)
     }
