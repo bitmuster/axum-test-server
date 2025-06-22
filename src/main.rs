@@ -151,7 +151,7 @@ mod todo {
             .routes(routes!(do_stuff))
             .routes(routes!(convert_xml))
             .routes(routes!(upload_to_blend))
-            .routes(routes!(noupload_to_blend))
+            .routes(routes!(testquery))
             .routes(routes!(blend_files))
             .routes(routes!(list_to_blend))
             .routes(routes!(list_todos, create_todo))
@@ -211,6 +211,36 @@ mod todo {
         Json(String::from("Stuff").repeat(mul as usize))
     }
 
+    /// Upload file to blend
+    /// does not work yet
+    #[utoipa::path(
+        get,
+        path = "/stuff/testquery",
+        tag = "stuff",
+        params(
+            ("name" = String, Query),
+            // ("data" = String, Query),
+        ),
+        responses(
+            (status = 200, description = "File uploadedFile uploaded"),
+            (status = 400, description = "Whatever", body = String),
+        ),
+    )]
+    async fn testquery(
+        // Query(name): Query<String>,
+        name: Query<String>,
+        // Query((name, data)): Query<(String, String)>,
+        // Query(data): Query<String>,
+        //State(store): State<Arc<Store>>,
+        // name: String,
+        // data: String,
+    ) {
+        //let mut state = store.lock().await;
+        println!("The Request {:?}", name);
+        // println!("The Request Data {:?}", data.len());
+        // state.blend_storage.push((name, data));
+    }
+
     /// convert
     #[utoipa::path(
         post,
@@ -238,38 +268,6 @@ mod todo {
         println!("The Reponse {}", results);
         results
         //Json(results)
-    }
-
-    /// Upload file to blend
-    /// does not work
-    #[utoipa::path(
-        get,
-        path = "/noupload",
-        tag = "blend",
-        params(
-            ("name" = String, Query),
-            // ("data" = String, Query),
-        ),
-        responses(
-            (status = 200, description = "File uploadedFile uploaded"),
-            (status = 400, description = "Whatever", body = String),
-        ),
-        // request_body(content = String, description = "Xml as string request", content_type = "text/xml"),
-        // request_body(content = String, description = "Xml as string request", content_type = "text/xml"),
-    )]
-    async fn noupload_to_blend(
-        // Query(name): Query<String>,
-        name: Query<String>,
-        // Query((name, data)): Query<(String, String)>,
-        // Query(data): Query<String>,
-        //State(store): State<Arc<Store>>,
-        // name: String,
-        // data: String,
-    ) {
-        //let mut state = store.lock().await;
-        println!("The Request {:?}", name);
-        // println!("The Request Data {:?}", data.len());
-        // state.blend_storage.push((name, data));
     }
 
     /// Upload file to blend
