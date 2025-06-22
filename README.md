@@ -18,7 +18,7 @@ RapiDoc can be found from `http://localhost:8080/rapidoc`.
 Scalar can be reached on `http://localhost:8080/scalar`.
 
 
-Generate certificate:
+# Generate certificate:
 
     openssl req -x509 -nodes -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 365
 
@@ -43,3 +43,10 @@ Open:
 * https://docs.rs/utoipa/latest/utoipa/
 * https://docs.rs/utoipa-gen/5.4.0/utoipa_gen/attr.path.html
 
+
+# Podman Container
+
+    podman build .
+    podman run -p 44001:44001 <id>
+    https://localhost:44001/swagger-ui/
+    https://<ip>:44001/swagger-ui/
