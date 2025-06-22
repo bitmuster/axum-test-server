@@ -29,6 +29,6 @@ ret = requests.get(url_blend, verify=False)
 ret.raise_for_status()
 
 # print(ret.text)
-with open("out.ods", "w") as f:
-    f.write(ret.text)
+with open("out.ods", "wb") as f:
+    f.write(ret.content)
 
