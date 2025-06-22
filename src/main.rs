@@ -95,6 +95,7 @@ mod todo {
     use hyper::{HeaderMap, StatusCode};
     use serde::{Deserialize, Serialize};
     use tokio::sync::Mutex;
+    use tracing::debug;
     use utoipa::{IntoParams, ToSchema};
     use utoipa_axum::{router::OpenApiRouter, routes};
 
@@ -321,8 +322,9 @@ mod todo {
         path = "/blend",
         tag = "blend",
         responses(
-            (status = 200, description = "List matching todos by query", body = String),
-            (status = 400, description = "Errror", body = String),
+            (status = 200, description = "List matching todos by query",
+                 content_type = "application/octet-stream"),
+            (status = 400, description = "Errror" ),
         ),
     )]
     async fn blend_files(State(store): State<Arc<Store>>) -> impl IntoResponse {
@@ -340,18 +342,28 @@ mod todo {
             .collect::<Vec<String>>();
         let mrl = match blend_result::blend_results::blend(&data, &files, 5) {
             Ok(x) => x,
-            Err(error) => return error.to_string(),
+            Err(error) => {
+                debug!("Error while blending");
+                return error.to_string().as_bytes().to_owned();
+            }
         };
         let result = match mrl.export_to_ods() {
             Ok(x) => x,
-            Err(error) => return error.to_string(),
+            Err(error) => {
+                debug!("Error while exporing");
+                return error.to_string().as_bytes().to_owned();
+            }
         };
-        let result = match String::from_utf8(result) {
-            Ok(x) => x,
-            Err(error) => return error.to_string(),
-        };
-        println!("The Reponse has len {}", result.len());
+        // let result = match String::from_utf8(result) {
+        //     Ok(x) => x,
+        //     Err(error) => {
+        //         debug!("Error while converting");
+        //         return error.to_string();
+        //     }
+        // };
+        debug!("The Reponse has len {}", result.len());
         state.blend_storage = Vec::new();
+
         result
         //Json(results)
     }
