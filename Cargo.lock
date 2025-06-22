@@ -379,7 +379,7 @@ dependencies = [
 [[package]]
 name = "blend_result"
 version = "0.1.0"
-source = "git+https://github.com/bitmuster/BlendResult.git#d68f532ad352a34c153072e69418170da52768d8"
+source = "git+https://github.com/bitmuster/BlendResult.git#66d5bbd07672dcfa24d79a104dd7a602a2ce0da1"
 dependencies = [
  "anyhow",
  "clap",
