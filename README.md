@@ -21,6 +21,8 @@ Generate certificate:
 
 ```bash
 cargo run
+
+RUST_LOG=trace cargo run
 ```
 
 Open:
@@ -35,4 +37,5 @@ https://docs.rs/tower-service/0.3.3/tower_service/index.html
 https://docs.rs/utoipa-swagger-ui/latest/utoipa_swagger_ui/index.html
 https://docs.rs/utoipa-axum/latest/utoipa_axum/index.html
 https://docs.rs/utoipa/latest/utoipa/
+https://docs.rs/utoipa-gen/5.4.0/utoipa_gen/attr.path.html
 

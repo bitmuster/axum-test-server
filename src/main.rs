@@ -84,6 +84,7 @@ async fn main() -> Result<(), Error> {
 mod todo {
     use std::sync::Arc;
 
+    use axum::debug_handler;
     use axum::{
         extract::{Path, Query, State},
         response::IntoResponse,
@@ -150,7 +151,9 @@ mod todo {
             .routes(routes!(do_stuff))
             .routes(routes!(convert_xml))
             .routes(routes!(upload_to_blend))
+            .routes(routes!(noupload_to_blend))
             .routes(routes!(blend_files))
+            .routes(routes!(list_to_blend))
             .routes(routes!(list_todos, create_todo))
             .routes(routes!(search_todos))
             .routes(routes!(mark_done, delete_todo))
@@ -238,28 +241,80 @@ mod todo {
     }
 
     /// Upload file to blend
+    /// does not work
     #[utoipa::path(
-        post,
-        path = "/upload",
+        get,
+        path = "/noupload",
         tag = "blend",
         params(
-            ("name" = String, Path, description = "Filename")
+            ("name" = String, Query),
+            // ("data" = String, Query),
         ),
         responses(
             (status = 200, description = "File uploadedFile uploaded"),
+            (status = 400, description = "Whatever", body = String),
         ),
-        request_body(content = String, description = "Xml as string request", content_type = "text/xml"),
+        // request_body(content = String, description = "Xml as string request", content_type = "text/xml"),
+        // request_body(content = String, description = "Xml as string request", content_type = "text/xml"),
     )]
-    async fn upload_to_blend(
-        Path(mul): Path<String>,
-        State(store): State<Arc<Store>>,
+    async fn noupload_to_blend(
+        // Query(name): Query<String>,
+        name: Query<String>,
+        // Query((name, data)): Query<(String, String)>,
+        // Query(data): Query<String>,
+        //State(store): State<Arc<Store>>,
         // name: String,
         // data: String,
+    ) {
+        //let mut state = store.lock().await;
+        println!("The Request {:?}", name);
+        // println!("The Request Data {:?}", data.len());
+        // state.blend_storage.push((name, data));
+    }
+
+    /// Upload file to blend
+    #[utoipa::path(
+        post,
+        path = "/upload/{name}",
+        tag = "blend",
+        responses(
+            (status = 200, description = "File uploaded"),
+        ),
+        params(
+            ("name" = String, Path, description = "Filename")
+        ),
+        request_body(content = String, description = "Xml as string request",
+             content_type = "text/xml"),
+    )]
+    #[debug_handler]
+    async fn upload_to_blend(
+        Path(name): Path<String>,
+        State(store): State<Arc<Store>>,
+        data: String,
     ) -> impl IntoResponse {
         let mut state = store.lock().await;
-        // println!("The Request {}", name);
-        // println!("The Request Data {}", data.len());
-        // state.blend_storage.push((name, data));
+        println!("The Request {:?}", data);
+        println!("The Request Data {:?}", data.len());
+        state.blend_storage.push((name, data));
+    }
+
+    /// List files
+    #[utoipa::path(
+        get,
+        path = "/list",
+        tag = "blend",
+        responses(
+            (status = 200, description = "Files", body = String),
+        ),
+    )]
+    async fn list_to_blend(State(store): State<Arc<Store>>) -> impl IntoResponse {
+        let mut state = store.lock().await;
+        let files = state
+            .blend_storage
+            .iter()
+            .map(|x| x.0.clone())
+            .collect::<Vec<String>>();
+        format!("{:?}", files)
     }
 
     /// blend
@@ -272,7 +327,8 @@ mod todo {
             (status = 201, description = "Todo item created successfully", body = String),
             (status = 409, description = "Todo already exists", body = String),
         ),
-        request_body(content = String, description = "Xml as string request", content_type = "text/xml"),
+        request_body(content = String, description = "Xml as string request",
+             content_type = "text/xml"),
     )]
     async fn blend_files(
         State(store): State<Arc<Store>>,
