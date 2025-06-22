@@ -254,7 +254,7 @@ mod todo {
         request_body(content = String, description = "Xml as string request", content_type = "text/xml"),
     )]
     async fn convert_xml(
-        State(store): State<Arc<Store>>,
+        State(_store): State<Arc<Store>>,
         //string : Query<String>
         //Json(val): Json<Val>,
         //body: String,
@@ -263,9 +263,9 @@ mod todo {
         //) -> Json<String> {
         //let string : String = Json(json);
         //let string : String = val.value;
-        println!("The Request {}", string);
+        // println!("The Request {}", string);
         let results = blend_result::parse_from_str_to_str(&string).unwrap();
-        println!("The Reponse {}", results);
+        // println!("The Reponse {}", results);
         results
         //Json(results)
     }
@@ -291,8 +291,8 @@ mod todo {
         data: String,
     ) -> impl IntoResponse {
         let mut state = store.lock().await;
-        println!("The Request {:?}", data);
-        println!("The Request Data {:?}", data.len());
+        // println!("The Request {:?}", data);
+        // println!("The Request Data {:?}", data.len());
         state.blend_storage.push((name, data));
     }
 
@@ -326,7 +326,7 @@ mod todo {
         ),
     )]
     async fn blend_files(State(store): State<Arc<Store>>) -> impl IntoResponse {
-        let state = store.lock().await;
+        let mut state = store.lock().await;
         // println!("The Request {}", string);
         let files = state
             .blend_storage
@@ -342,14 +342,17 @@ mod todo {
             Ok(x) => x,
             Err(error) => return error.to_string(),
         };
-        mrl.export_to_ods();
-        // match mrl.export_to_ods() {
-        //     Ok(_) => (),
-        //     Err(error) => return error.into_response(),
-        // };
-        let results = "bam".to_string();
-        println!("The Reponse has len {}", results.len());
-        results
+        let result = match mrl.export_to_ods() {
+            Ok(x) => x,
+            Err(error) => return error.to_string(),
+        };
+        let result = match String::from_utf8(result) {
+            Ok(x) => x,
+            Err(error) => return error.to_string(),
+        };
+        println!("The Reponse has len {}", result.len());
+        state.blend_storage = Vec::new();
+        result
         //Json(results)
     }
 
