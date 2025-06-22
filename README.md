@@ -1,4 +1,8 @@
-# todo-axum ~ utoipa with utoipa-swagger-ui, utoipa-redoc and utoipa-rapidoc example
+
+# Axum Testserver
+
+utoipa with utoipa-swagger-ui example.
+Based on: https://github.com/juhaku/utoipa/tree/master/examples/todo-axum
 
 This is a demo `axum` application with in-memory storage to manage Todo items. The API
 demonstrates `utoipa` with `utoipa-swagger-ui` functionalities.
@@ -31,11 +35,11 @@ Open:
 
 # Docs
 
-https://crates.io/crates/tracing-subscriber
-https://docs.rs/axum/0.8.3/axum/index.html
-https://docs.rs/tower-service/0.3.3/tower_service/index.html
-https://docs.rs/utoipa-swagger-ui/latest/utoipa_swagger_ui/index.html
-https://docs.rs/utoipa-axum/latest/utoipa_axum/index.html
-https://docs.rs/utoipa/latest/utoipa/
-https://docs.rs/utoipa-gen/5.4.0/utoipa_gen/attr.path.html
+* https://crates.io/crates/tracing-subscriber
+* https://docs.rs/axum/0.8.3/axum/index.html
+* https://docs.rs/tower-service/0.3.3/tower_service/index.html
+* https://docs.rs/utoipa-swagger-ui/latest/utoipa_swagger_ui/index.html
+* https://docs.rs/utoipa-axum/latest/utoipa_axum/index.html
+* https://docs.rs/utoipa/latest/utoipa/
+* https://docs.rs/utoipa-gen/5.4.0/utoipa_gen/attr.path.html
 
