@@ -1,10 +1,10 @@
 [package]
 name = "axum-test-server"
-description = "Simple axum todo example api with utoipa and Swagger UI, Rapidoc, Redoc, and Scalar"
+description = "Simple axum example api with utoipa and Swagger UI"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-authors = ["Elli Example <example@example.com>"]
+authors = ["Elli Example <example@example.com>", "Michael Abel <mabel@bitmuster.org>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
