@@ -45,7 +45,7 @@ async fn main() -> Result<(), Error> {
             if let Some(components) = openapi.components.as_mut() {
                 components.add_security_scheme(
                     "api_key",
-                    SecurityScheme::ApiKey(ApiKey::Header(ApiKeyValue::new("todo_apikey"))),
+                    SecurityScheme::ApiKey(ApiKey::Header(ApiKeyValue::new("theapikey"))),
                 )
             }
         }
@@ -170,6 +170,9 @@ mod todo {
         tag = TODO_TAG,
         responses(
             (status = 200, description = "List all todos successfully", body = [Todo])
+        ),
+        security(
+            ("api_key" = [])
         )
     )]
     async fn list_todos(State(store): State<Arc<Store>>) -> Json<Vec<Todo>> {
@@ -194,21 +197,27 @@ mod todo {
         tag = "stuff",
         responses(
             (status = 200, description = "Stuff successfully"),
+            (status = 401, description = "Unauthorized"),
+            // (status = 401, description = "Unauthorized", body = TodoError, example = json!(TodoError::Unauthorized(String::from("missing api key")))),
             (status = 404, description = "Stuff not found")
         ),
         params(
             ("mul" = u32, Path, description = "Multron")
         ),
         security(
-            (), // <-- make optional authentication
             ("api_key" = [])
         )
     )]
     async fn do_stuff(
         Path(mul): Path<u32>,
         State(_store): State<Arc<Store>>,
-        _headers: HeaderMap,
+        headers: HeaderMap,
     ) -> Json<String> {
+        match check_api_key(true, headers) {
+            Ok(_) => (),
+            // Err(error) => return Json(TodoError::Unauthorized(String::from("missing api key"))),
+            Err(error) => return Json("unauthorized".to_string()),
+        }
         Json(String::from("Stuff").repeat(mul as usize))
     }
 
@@ -534,8 +543,8 @@ mod todo {
         require_api_key: bool,
         headers: HeaderMap,
     ) -> Result<(), (StatusCode, Json<TodoError>)> {
-        match headers.get("todo_apikey") {
-            Some(header) if header != "utoipa-rocks" => Err((
+        match headers.get("theapikey") {
+            Some(header) if header != "rocks" => Err((
                 StatusCode::UNAUTHORIZED,
                 Json(TodoError::Unauthorized(String::from("incorrect api key"))),
             )),
