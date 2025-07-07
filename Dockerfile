@@ -1,11 +1,15 @@
 
-FROM docker.io/library/rust
+FROM debian:bookworm-slim
 
-WORKDIR /home/hektor/Repos/axum-test-server
-COPY . .
+RUN apt update
+RUN apt install libssl3
+
+COPY target/release/axum-test-server .
 COPY cert.pem .
 COPY key.pem .
 
-RUN cargo install --path .
+RUN pwd
+RUN ls -lah
 
-CMD ["axum-test-server"]
+CMD ["/axum-test-server"]
+
