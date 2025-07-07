@@ -6,7 +6,6 @@ use axum::{
     response::IntoResponse,
     Json,
 };
-use blend_result;
 use hyper::{HeaderMap, StatusCode};
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
@@ -135,14 +134,7 @@ async fn convert_xml(
     //body: String,
     string: String, //json : Json<String>
 ) -> String {
-    //) -> Json<String> {
-    //let string : String = Json(json);
-    //let string : String = val.value;
-    // println!("The Request {}", string);
-    let results = blend_result::parse_from_str_to_str(&string).unwrap();
-    // println!("The Reponse {}", results);
-    results
-    //Json(results)
+    blend_result::parse_from_str_to_str(&string).unwrap()
 }
 
 /// Upload file to blend
