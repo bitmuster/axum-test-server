@@ -11,10 +11,10 @@ use hyper::{HeaderMap, StatusCode};
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 use tracing::debug;
-use utoipa::{IntoParams, ToSchema};
+use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
-/// In-memory todo store
+/// In-memory stuff store
 type Store = Mutex<Storage>;
 
 #[derive(Clone)]
@@ -30,31 +30,16 @@ impl Storage {
     }
 }
 
-/// Item to do.
-#[derive(Serialize, Deserialize, ToSchema, Clone)]
-struct Todo {
-    id: i32,
-    #[schema(example = "Buy groceries")]
-    value: String,
-    done: bool,
-}
-
-#[derive(Serialize, Deserialize, ToSchema, Clone)]
-struct Val {
-    #[schema(example = "Buy groceries")]
-    value: String,
-}
-
 /// Todo operation errors
 #[derive(Serialize, Deserialize, ToSchema)]
-enum TodoError {
-    /// Todo already exists conflict.
-    #[schema(example = "Todo already exists")]
+enum StuffError {
+    /// Already exists conflict.
+    #[schema(example = "Item already exists")]
     Conflict(String),
-    /// Todo not found by id.
+    /// Not found by id.
     #[schema(example = "id = 1")]
     NotFound(String),
-    /// Todo operation unauthorized
+    /// Operation unauthorized
     #[schema(example = "missing api key")]
     Unauthorized(String),
 }
@@ -78,7 +63,7 @@ pub(super) fn router() -> OpenApiRouter {
         tag = "stuff",
         responses(
             (status = 200, description = "Stuff successfully", body = String),
-            (status = 401, description = "Unauthorized", body = TodoError),
+            (status = 401, description = "Unauthorized", body = StuffError),
             // (status = 401, description = "Unauthorized", body = TodoError, example = json!(TodoError::Unauthorized(String::from("missing api key")))),
             (status = 404, description = "Stuff not found")
         ),
@@ -112,7 +97,7 @@ async fn do_stuff(
             // ("data" = String, Query),
         ),
         responses(
-            (status = 200, description = "File uploadedFile uploaded"),
+            (status = 200, description = "Called testquery"),
             (status = 400, description = "Whatever", body = String),
         ),
     )]
@@ -137,9 +122,9 @@ async fn testquery(
         path = "/xml",
         tag = "blend",
         responses(
-            (status = 200, description = "List matching todos by query", body = String),
-            (status = 201, description = "Todo item created successfully", body = String),
-            (status = 409, description = "Todo already exists", body = String),
+            (status = 200, description = "Call blend_result_parse_from_str_to_str", body = String),
+            // (status = 201, description = "Todo item created successfully", body = String),
+            // (status = 409, description = "Todo already exists", body = String),
         ),
         request_body(content = String, description = "Xml as string request", content_type = "text/xml"),
     )]
@@ -192,7 +177,7 @@ async fn upload_to_blend(
         path = "/list",
         tag = "blend",
         responses(
-            (status = 200, description = "Files", body = String),
+            (status = 200, description = "List files", body = String),
         ),
     )]
 async fn list_to_blend(State(store): State<Arc<Store>>) -> impl IntoResponse {
@@ -211,7 +196,7 @@ async fn list_to_blend(State(store): State<Arc<Store>>) -> impl IntoResponse {
         path = "/blend",
         tag = "blend",
         responses(
-            (status = 200, description = "List matching todos by query",
+            (status = 200, description = "Call blend_results::blend",
                  content_type = "application/octet-stream"),
             (status = 400, description = "Errror" ),
         ),
@@ -261,15 +246,15 @@ async fn blend_files(State(store): State<Arc<Store>>) -> impl IntoResponse {
 fn check_api_key(
     require_api_key: bool,
     headers: HeaderMap,
-) -> Result<(), (StatusCode, Json<TodoError>)> {
+) -> Result<(), (StatusCode, Json<StuffError>)> {
     match headers.get("theapikey") {
         Some(header) if header != "rocks" => Err((
             StatusCode::UNAUTHORIZED,
-            Json(TodoError::Unauthorized(String::from("incorrect api key"))),
+            Json(StuffError::Unauthorized(String::from("incorrect api key"))),
         )),
         None if require_api_key => Err((
             StatusCode::UNAUTHORIZED,
-            Json(TodoError::Unauthorized(String::from("missing api key"))),
+            Json(StuffError::Unauthorized(String::from("missing api key"))),
         )),
         _ => Ok(()),
     }
