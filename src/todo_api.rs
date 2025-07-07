@@ -78,7 +78,7 @@ pub(super) fn router() -> OpenApiRouter {
         ),
         security(
             ("api_key" = [])
-        )
+        ),
     )]
 async fn list_todos(State(store): State<Arc<Store>>) -> Json<Vec<Todo>> {
     let todos = store.lock().await.clone();
@@ -107,7 +107,10 @@ struct TodoSearchQuery {
         ),
         responses(
             (status = 200, description = "List matching todos by query", body = [Todo])
-        )
+        ),
+        security(
+            ("api_key" = [])
+        ),
     )]
 async fn search_todos(
     State(store): State<Arc<Store>>,
@@ -137,7 +140,10 @@ async fn search_todos(
         responses(
             (status = 201, description = "Todo item created successfully", body = Todo),
             (status = 409, description = "Todo already exists", body = TodoError)
-        )
+        ),
+        security(
+            ("api_key" = [])
+        ),
     )]
 async fn create_todo(State(store): State<Arc<Store>>, Json(todo): Json<Todo>) -> impl IntoResponse {
     let mut todos = store.lock().await;
@@ -178,9 +184,8 @@ async fn create_todo(State(store): State<Arc<Store>>, Json(todo): Json<Todo>) ->
             ("id" = i32, Path, description = "Todo database id")
         ),
         security(
-            (), // <-- make optional authentication
             ("api_key" = [])
-        )
+        ),
     )]
 async fn mark_done(
     Path(id): Path<i32>,
@@ -222,7 +227,7 @@ async fn mark_done(
         ),
         security(
             ("api_key" = [])
-        )
+        ),
     )]
 async fn delete_todo(
     Path(id): Path<i32>,

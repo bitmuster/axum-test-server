@@ -71,7 +71,7 @@ pub(super) fn router() -> OpenApiRouter {
         ),
         security(
             ("api_key" = [])
-        )
+        ),
     )]
 async fn do_stuff(
     Path(mul): Path<u32>,
@@ -98,6 +98,9 @@ async fn do_stuff(
         responses(
             (status = 200, description = "Called testquery"),
             (status = 400, description = "Whatever", body = String),
+        ),
+        security(
+            ("api_key" = [])
         ),
     )]
 async fn testquery(
@@ -126,6 +129,9 @@ async fn testquery(
             // (status = 409, description = "Todo already exists", body = String),
         ),
         request_body(content = String, description = "Xml as string request", content_type = "text/xml"),
+        security(
+            ("api_key" = [])
+        ),
     )]
 async fn convert_xml(
     State(_store): State<Arc<Store>>,
@@ -150,6 +156,9 @@ async fn convert_xml(
         ),
         request_body(content = String, description = "Xml as string request",
              content_type = "text/xml"),
+        security(
+            ("api_key" = [])
+        ),
     )]
 #[debug_handler]
 async fn upload_to_blend(
@@ -171,6 +180,9 @@ async fn upload_to_blend(
         responses(
             (status = 200, description = "List files", body = String),
         ),
+        security(
+            ("api_key" = [])
+        ),
     )]
 async fn list_to_blend(State(store): State<Arc<Store>>) -> impl IntoResponse {
     let state = store.lock().await;
@@ -191,6 +203,9 @@ async fn list_to_blend(State(store): State<Arc<Store>>) -> impl IntoResponse {
             (status = 200, description = "Call blend_results::blend",
                  content_type = "application/octet-stream"),
             (status = 400, description = "Errror" ),
+        ),
+        security(
+            ("api_key" = [])
         ),
     )]
 async fn blend_files(State(store): State<Arc<Store>>) -> impl IntoResponse {
