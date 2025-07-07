@@ -196,8 +196,8 @@ mod todo {
         path = "/stuff/{mul}",
         tag = "stuff",
         responses(
-            (status = 200, description = "Stuff successfully"),
-            (status = 401, description = "Unauthorized"),
+            (status = 200, description = "Stuff successfully", body = String),
+            (status = 401, description = "Unauthorized", body = TodoError),
             // (status = 401, description = "Unauthorized", body = TodoError, example = json!(TodoError::Unauthorized(String::from("missing api key")))),
             (status = 404, description = "Stuff not found")
         ),
@@ -212,13 +212,12 @@ mod todo {
         Path(mul): Path<u32>,
         State(_store): State<Arc<Store>>,
         headers: HeaderMap,
-    ) -> Json<String> {
+    ) -> impl IntoResponse {
         match check_api_key(true, headers) {
             Ok(_) => (),
-            // Err(error) => return Json(TodoError::Unauthorized(String::from("missing api key"))),
-            Err(error) => return Json("unauthorized".to_string()),
+            Err(error) => return error.into_response(),
         }
-        Json(String::from("Stuff").repeat(mul as usize))
+        Json(String::from("Stuff").repeat(mul as usize)).into_response()
     }
 
     /// Upload file to blend
