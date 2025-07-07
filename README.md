@@ -1,22 +1,11 @@
 
-# Axum Testserver
+# Axum Testserver for Robotframework Result Blender
 
 utoipa with utoipa-swagger-ui example.
 Based on: https://github.com/juhaku/utoipa/tree/master/examples/todo-axum
 
-This is a demo `axum` application with in-memory storage to manage Todo items. The API
-demonstrates `utoipa` with `utoipa-swagger-ui` functionalities.
-
-For security restricted endpoints the super secret API key is: `utoipa-rocks`.
-
-Just run command below to run the demo application and browse to `http://localhost:8080/swagger-ui/`.
-
-If you prefer Redoc just head to `http://localhost:8080/redoc` and view the Open API.
-
-RapiDoc can be found from `http://localhost:8080/rapidoc`.
-
-Scalar can be reached on `http://localhost:8080/scalar`.
-
+Experimental feature is to blend robotframework files.
+See also : https://github.com/bitmuster/BlendResult .
 
 # Generate certificate:
 
@@ -46,6 +35,9 @@ Open:
 
 # Podman Container
 
+The container currently uses the prebuilt binary for debugging purposes.
+
+    cargo build --release
     podman build .
     podman run -p 44001:44001 <id>
     https://localhost:44001/swagger-ui/
