@@ -163,8 +163,12 @@ async fn list_to_blend(State(store): State<Arc<Store>>, headers: HeaderMap) -> r
             ("api_key" = [])
         ),
     )]
-async fn blend_files(State(store): State<Arc<Store>>) -> impl IntoResponse {
+async fn blend_files(State(store): State<Arc<Store>>, headers: HeaderMap) -> response::Response {
     let mut state = store.lock().await;
+    match check_api_key(true, headers) {
+        Ok(_) => (),
+        Err(error) => return error.into_response(),
+    }
     // println!("The Request {}", string);
     let files = state
         .blend_storage
@@ -180,14 +184,14 @@ async fn blend_files(State(store): State<Arc<Store>>) -> impl IntoResponse {
         Ok(x) => x,
         Err(error) => {
             debug!("Error while blending");
-            return error.to_string().as_bytes().to_owned();
+            return error.to_string().as_bytes().to_owned().into_response();
         }
     };
     let result = match mrl.export_to_ods() {
         Ok(x) => x,
         Err(error) => {
             debug!("Error while exporing");
-            return error.to_string().as_bytes().to_owned();
+            return error.to_string().as_bytes().to_owned().into_response();
         }
     };
     // let result = match String::from_utf8(result) {
@@ -200,7 +204,7 @@ async fn blend_files(State(store): State<Arc<Store>>) -> impl IntoResponse {
     debug!("The Reponse has len {}", result.len());
     state.blend_storage = Vec::new();
 
-    result
+    result.into_response()
     //Json(results)
 }
 
