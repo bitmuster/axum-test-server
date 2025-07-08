@@ -13,6 +13,7 @@ use axum_server::tls_openssl::OpenSSLConfig;
 use tracing_subscriber::EnvFilter;
 use utoipa_swagger_ui::SwaggerUi;
 
+mod blend_api;
 mod stuff_api;
 mod todo_api;
 
@@ -56,6 +57,7 @@ async fn main() -> Result<(), Error> {
 
     let (router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .nest("/api/v1/stuff", stuff_api::router())
+        .nest("/api/v1/blend", blend_api::router())
         .nest("/api/v1/todo", todo_api::router())
         .split_for_parts();
 
