@@ -54,6 +54,7 @@ pub(super) fn router() -> OpenApiRouter {
 }
 
 /// convert
+#[axum::debug_handler]
 #[utoipa::path(
         post,
         path = "/xml",
@@ -73,9 +74,17 @@ async fn convert_xml(
     //string : Query<String>
     //Json(val): Json<Val>,
     //body: String,
+    headers: HeaderMap,
     string: String, //json : Json<String>
-) -> String {
-    blend_result::parse_from_str_to_str(&string).unwrap()
+) -> impl IntoResponse {
+    match check_api_key(true, headers) {
+        Ok(_) => (),
+        Err(error) => return error.into_response(),
+    }
+    blend_result::parse_from_str_to_str(&string)
+        .unwrap()
+        .to_string()
+        .into_response()
 }
 
 /// Upload file to blend
