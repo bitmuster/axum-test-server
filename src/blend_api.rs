@@ -1,13 +1,14 @@
-use std::sync::Arc;
-
+use axum;
 use axum::debug_handler;
 use axum::{
     extract::{Path, State},
+    response,
     response::IntoResponse,
     Json,
 };
 use hyper::{HeaderMap, StatusCode};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::debug;
 use utoipa::ToSchema;
@@ -108,12 +109,18 @@ async fn convert_xml(
 async fn upload_to_blend(
     Path(name): Path<String>,
     State(store): State<Arc<Store>>,
+    headers: HeaderMap,
     data: String,
-) -> impl IntoResponse {
+) -> response::Response {
+    match check_api_key(true, headers) {
+        Ok(_) => (),
+        Err(error) => return error.into_response(),
+    }
     let mut state = store.lock().await;
     // println!("The Request {:?}", data);
     // println!("The Request Data {:?}", data.len());
     state.blend_storage.push((name, data));
+    ().into_response()
 }
 
 /// List files
@@ -128,14 +135,18 @@ async fn upload_to_blend(
             ("api_key" = [])
         ),
     )]
-async fn list_to_blend(State(store): State<Arc<Store>>) -> impl IntoResponse {
+async fn list_to_blend(State(store): State<Arc<Store>>, headers: HeaderMap) -> response::Response {
+    match check_api_key(true, headers) {
+        Ok(_) => (),
+        Err(error) => return error.into_response(),
+    }
     let state = store.lock().await;
     let files = state
         .blend_storage
         .iter()
         .map(|x| x.0.clone())
         .collect::<Vec<String>>();
-    format!("{:?}", files)
+    format!("{:?}", files).into_response()
 }
 
 /// blend
