@@ -8,6 +8,7 @@ use axum::{
 };
 use hyper::{HeaderMap, StatusCode};
 use serde::{Deserialize, Serialize};
+use std::env;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::debug;
@@ -213,8 +214,20 @@ fn check_api_key(
     require_api_key: bool,
     headers: HeaderMap,
 ) -> Result<(), (StatusCode, Json<StuffError>)> {
+    let key = match env::var("API_KEY") {
+        Ok(key) => key,
+        Err(e) => {
+            return Err((
+                StatusCode::UNAUTHORIZED,
+                Json(StuffError::Unauthorized(String::from(format!(
+                    "no api key: {e}"
+                )))),
+            ))
+        }
+    };
     match headers.get("theapikey") {
-        Some(header) if header != "rocks" => Err((
+        Some(header) if *header == *key => Ok(()),
+        Some(header) if *header != *key => Err((
             StatusCode::UNAUTHORIZED,
             Json(StuffError::Unauthorized(String::from("incorrect api key"))),
         )),
@@ -222,6 +235,10 @@ fn check_api_key(
             StatusCode::UNAUTHORIZED,
             Json(StuffError::Unauthorized(String::from("missing api key"))),
         )),
-        _ => Ok(()),
+        // _ => Ok(()),
+        _ => Err((
+            StatusCode::UNAUTHORIZED,
+            Json(StuffError::Unauthorized(String::from("whatever"))),
+        )),
     }
 }
