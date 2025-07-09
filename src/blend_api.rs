@@ -79,7 +79,7 @@ async fn convert_xml(
     headers: HeaderMap,
     string: String, //json : Json<String>
 ) -> impl IntoResponse {
-    match check_api_key(true, headers) {
+    match check_api_key(headers) {
         Ok(_) => (),
         Err(error) => return error.into_response(),
     }
@@ -113,7 +113,7 @@ async fn upload_to_blend(
     headers: HeaderMap,
     data: String,
 ) -> response::Response {
-    match check_api_key(true, headers) {
+    match check_api_key(headers) {
         Ok(_) => (),
         Err(error) => return error.into_response(),
     }
@@ -137,7 +137,7 @@ async fn upload_to_blend(
         ),
     )]
 async fn list_to_blend(State(store): State<Arc<Store>>, headers: HeaderMap) -> response::Response {
-    match check_api_key(true, headers) {
+    match check_api_key(headers) {
         Ok(_) => (),
         Err(error) => return error.into_response(),
     }
@@ -166,7 +166,7 @@ async fn list_to_blend(State(store): State<Arc<Store>>, headers: HeaderMap) -> r
     )]
 async fn blend_files(State(store): State<Arc<Store>>, headers: HeaderMap) -> response::Response {
     let mut state = store.lock().await;
-    match check_api_key(true, headers) {
+    match check_api_key(headers) {
         Ok(_) => (),
         Err(error) => return error.into_response(),
     }
@@ -210,10 +210,7 @@ async fn blend_files(State(store): State<Arc<Store>>, headers: HeaderMap) -> res
 }
 
 // normally you should create a middleware for this but this is sufficient for sake of example.
-fn check_api_key(
-    require_api_key: bool,
-    headers: HeaderMap,
-) -> Result<(), (StatusCode, Json<StuffError>)> {
+fn check_api_key(headers: HeaderMap) -> Result<(), (StatusCode, Json<StuffError>)> {
     let key = match env::var("API_KEY") {
         Ok(key) => key,
         Err(e) => {
@@ -226,19 +223,21 @@ fn check_api_key(
         }
     };
     match headers.get("theapikey") {
-        Some(header) if *header == *key => Ok(()),
-        Some(header) if *header != *key => Err((
+        Some(header) => {
+            if *header == *key {
+                Ok(())
+            } else {
+                Err((
+                    StatusCode::UNAUTHORIZED,
+                    Json(StuffError::Unauthorized(String::from("incorrect api key"))),
+                ))
+            }
+        }
+        None => Err((
             StatusCode::UNAUTHORIZED,
-            Json(StuffError::Unauthorized(String::from("incorrect api key"))),
-        )),
-        None if require_api_key => Err((
-            StatusCode::UNAUTHORIZED,
-            Json(StuffError::Unauthorized(String::from("missing api key"))),
-        )),
-        // _ => Ok(()),
-        _ => Err((
-            StatusCode::UNAUTHORIZED,
-            Json(StuffError::Unauthorized(String::from("whatever"))),
+            Json(StuffError::Unauthorized(String::from(
+                "missing api key in request",
+            ))),
         )),
     }
 }
